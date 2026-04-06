@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>高中数学公式速查表（完整版）</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.7/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.7/dist/katex.min.js"></script>
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box}
+        body{background:#f8fafc;font-family:system-ui,'Segoe UI',sans-serif;padding:1.5rem 1rem 3rem;color:#0f172a}
+        .container{max-width:1300px;margin:0 auto}
+        .header{text-align:center;margin-bottom:2rem}
+        h1{font-size:1.8rem;font-weight:600;background:linear-gradient(135deg,#1e293b,#2d3e50);background-clip:text;-webkit-background-clip:text;color:transparent}
+        .sub{color:#475569;margin-top:0.3rem;font-size:0.9rem}
+        .search-box{max-width:500px;margin:0 auto 2rem auto}
+        #searchInput{width:100%;padding:0.9rem 1.2rem;font-size:1rem;border:1px solid #cbd5e1;border-radius:60px;background:white;outline:none}
+        #searchInput:focus{border-color:#3b82f6;box-shadow:0 0 0 3px rgba(59,130,246,0.2)}
+        .category-section{margin-bottom:2rem}
+        .category-title{font-size:1.4rem;font-weight:600;padding-left:0.5rem;border-left:5px solid #3b82f6;margin-bottom:1rem}
+        .formula-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:1rem}
+        .card{background:white;border-radius:20px;padding:1rem;box-shadow:0 4px 12px rgba(0,0,0,0.04);border:1px solid #e2e8f0;display:flex;flex-direction:column}
+        .formula-name{font-weight:600;background:#f1f5f9;display:inline-block;padding:0.2rem 0.8rem;border-radius:40px;margin-bottom:0.8rem;width:fit-content}
+        .formula-content{margin:0.5rem 0;overflow-x:auto}
+        .copy-btn{align-self:flex-end;margin-top:0.5rem;background:#f1f5f9;border:none;padding:0.3rem 1rem;border-radius:30px;font-size:0.75rem;cursor:pointer}
+        .copy-btn:hover{background:#e2e8f0}
+        .toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#1e293b;color:white;padding:6px 16px;border-radius:40px;font-size:0.85rem;opacity:0;transition:0.2s;pointer-events:none}
+        footer{text-align:center;margin-top:3rem;font-size:0.8rem;color:#64748b;border-top:1px solid #e2e8f0;padding-top:1.5rem}
+        @media (max-width:700px){.formula-grid{grid-template-columns:1fr}}
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <h1>📐 高中数学公式速查表</h1>
+        <div class="sub">集合 | 函数 | 三角 | 数列 | 向量 | 解析几何 | 概率统计 | 导数积分 | 极参</div>
+    </div>
+    <div class="search-box">
+        <input type="text" id="searchInput" placeholder="🔍 搜索公式名称或内容，例如：正弦、导数、离心率..." autocomplete="off">
+    </div>
+    <div id="formulaContainer"></div>
+    <footer>点击「复制」按钮可复制 LaTeX 代码 · 数据来源于高中数学全面整理</footer>
+</div>
+<div id="toast" class="toast">📋 已复制</div>
+
+<script>
+    // 公式数据库（基于用户上传的图片内容整理）
+    const formulas = [
+        // ================== 集合与逻辑 ==================
+        { cat:"集合与逻辑", name:"子集个数", latex: "2^n \\; (\\text{子集}),\\; 2^{n-1} \\; (\\text{真子集})" },
+        { cat:"集合与逻辑", name:"集合元素个数公式", latex: "n(A\\cup B)=n(A)+n(B)-n(A\\cap B)" },
+        { cat:"集合与逻辑", name:"充要条件", latex: "p \\Rightarrow q \\text{ 且 } q \\Rightarrow p \\Leftrightarrow p=q" },
+        { cat:"集合与逻辑", name:"全称命题否定", latex: "\\forall x\\in M, p(x) \\text{ 的否定：} \\exists x_0\\in M, \\neg p(x_0)" },
+        { cat:"集合与逻辑", name:"特称命题否定", latex: "\\exists x_0\\in M, p(x_0) \\text{ 的否定：} \\forall x\\in M, \\neg p(x)" },
+
+        // ================== 不等式 ==================
+        { cat:"不等式", name:"均值不等式", latex: "a+b \\ge 2\\sqrt{ab}\\quad (a,b>0)" },
+        { cat:"不等式", name:"均值变形", latex: "a^2+b^2\\ge 2ab" },
+        { cat:"不等式", name:"积定和最小", latex: "ab=p \\Rightarrow a+b\\ge 2\\sqrt{p}" },
+        { cat:"不等式", name:"和定积最大", latex: "a+b=k \\Rightarrow ab\\le \\frac{k^2}{4}" },
+        { cat:"不等式", name:"基本不等式链", latex: "\\frac{2}{\\frac1a+\\frac1b}\\le \\sqrt{ab}\\le \\frac{a+b}{2}\\le \\sqrt{\\frac{a^2+b^2}{2}}" },
+        { cat:"不等式", name:"一元二次不等式解", latex: "ax^2+bx+c>0 \\text{ 大于取两边，小于取中间}" },
+        { cat:"不等式", name:"绝对值不等式", latex: "|a|-|b|\\le |a\\pm b|\\le |a|+|b|" },
+        { cat:"不等式", name:"柯西不等式", latex: "(x_1^2+y_1^2)(x_2^2+y_2^2)\\ge (x_1x_2+y_1y_2)^2" },
+        { cat:"不等式", name:"伯努利不等式", latex: "(1+x)^n\\ge 1+nx\\;(n\\ge1,x>-1)" },
+
+        // ================== 函数与导数 ==================
+        { cat:"函数与导数", name:"幂函数导数", latex: "(x^n)' = nx^{n-1}" },
+        { cat:"函数与导数", name:"指数函数导数", latex: "(a^x)' = a^x\\ln a" },
+        { cat:"函数与导数", name:"自然指数导数", latex: "(e^x)' = e^x" },
+        { cat:"函数与导数", name:"对数函数导数", latex: "(\\log_a x)' = \\frac{1}{x\\ln a}" },
+        { cat:"函数与导数", name:"自然对数导数", latex: "(\\ln x)' = \\frac{1}{x}" },
+        { cat:"函数与导数", name:"正弦导数", latex: "(\\sin x)' = \\cos x" },
+        { cat:"函数与导数", name:"余弦导数", latex: "(\\cos x)' = -\\sin x" },
+        { cat:"函数与导数", name:"正切导数", latex: "(\\tan x)' = \\sec^2 x" },
+        { cat:"函数与导数", name:"乘积法则", latex: "(uv)' = u'v + uv'" },
+        { cat:"函数与导数", name:"商法则", latex: "\\left(\\frac{u}{v}\\right)' = \\frac{u'v-uv'}{v^2}" },
+        { cat:"函数与导数", name:"链式法则", latex: "\\frac{dy}{dx} = \\frac{dy}{du}\\cdot\\frac{du}{dx}" },
+        { cat:"函数与导数", name:"指数不等式", latex: "e^x \\ge x+1\\quad (x=0\\text{取等})" },
+        { cat:"函数与导数", name:"对数不等式", latex: "\\ln x \\le x-1\\quad (x=1\\text{取等})" },
+        { cat:"函数与导数", name:"洛必达法则", latex: "\\lim\\frac{f}{g}=\\lim\\frac{f'}{g'}\\;\\left(\\frac00\\text{或}\\frac\\infty\\infty\\right)" },
+        { cat:"函数与导数", name:"切线方程", latex: "y-f(x_0)=f'(x_0)(x-x_0)" },
+        { cat:"函数与导数", name:"函数单调性", latex: "f'(x)>0 \\Rightarrow \\text{增};\\; f'(x)<0 \\Rightarrow \\text{减}" },
+        { cat:"函数与导数", name:"极值条件", latex: "f'(x_0)=0 \\text{ 且左右变号}" },
+
+        // ================== 三角函数 ==================
+        { cat:"三角函数", name:"诱导公式口诀", latex: "\\pi\\text{倍加减名不变，符号看象限；半}\\pi\\text{加减名要变}" },
+        { cat:"三角函数", name:"和差公式", latex: "\\sin(\\alpha\\pm\\beta)=\\sin\\alpha\\cos\\beta\\pm\\cos\\alpha\\sin\\beta" },
+        { cat:"三角函数", name:"余弦和差", latex: "\\cos(\\alpha\\pm\\beta)=\\cos\\alpha\\cos\\beta\\mp\\sin\\alpha\\sin\\beta" },
+        { cat:"三角函数", name:"正切和差", latex: "\\tan(\\alpha\\pm\\beta)=\\frac{\\tan\\alpha\\pm\\tan\\beta}{1\\mp\\tan\\alpha\\tan\\beta}" },
+        { cat:"三角函数", name:"二倍角正弦", latex: "\\sin2\\alpha=2\\sin\\alpha\\cos\\alpha" },
+        { cat:"三角函数", name:"二倍角余弦", latex: "\\cos2\\alpha=\\cos^2\\alpha-\\sin^2\\alpha=1-2\\sin^2\\alpha=2\\cos^2\\alpha-1" },
+        { cat:"三角函数", name:"二倍角正切", latex: "\\tan2\\alpha=\\frac{2\\tan\\alpha}{1-\\tan^2\\alpha}" },
+        { cat:"三角函数", name:"辅助角公式", latex: "a\\sin x+b\\cos x=\\sqrt{a^2+b^2}\\sin(x+\\varphi),\\ \\tan\\varphi=\\frac{b}{a}" },
+        { cat:"三角函数", name:"正弦定理", latex: "\\frac{a}{\\sin A}=\\frac{b}{\\sin B}=\\frac{c}{\\sin C}=2R" },
+        { cat:"三角函数", name:"余弦定理", latex: "a^2=b^2+c^2-2bc\\cos A" },
+        { cat:"三角函数", name:"三角形面积", latex: "S=\\frac12ab\\sin C" },
+        { cat:"三角函数", name:"正切单调区间", latex: "(-\\frac{\\pi}{2}+k\\pi,\\frac{\\pi}{2}+k\\pi)" },
+
+        // ================== 数列 ==================
+        { cat:"数列", name:"等差数列通项", latex: "a_n=a_1+(n-1)d" },
+        { cat:"数列", name:"等差数列求和", latex: "S_n=\\frac{n(a_1+a_n)}{2}=na_1+\\frac{n(n-1)}{2}d" },
+        { cat:"数列", name:"等比数列通项", latex: "a_n=a_1q^{n-1}" },
+        { cat:"数列", name:"等比数列求和", latex: "S_n=\\frac{a_1(1-q^n)}{1-q}\\ (q\\neq1)" },
+        { cat:"数列", name:"等差中项", latex: "2A=a+b" },
+        { cat:"数列", name:"等比中项", latex: "G^2=ab" },
+        { cat:"数列", name:"裂项相消", latex: "\\frac{1}{n(n+1)}=\\frac1n-\\frac1{n+1}" },
+        { cat:"数列", name:"平方和公式", latex: "1^2+2^2+\\cdots+n^2=\\frac{n(n+1)(2n+1)}6" },
+        { cat:"数列", name:"立方和公式", latex: "1^3+2^3+\\cdots+n^3=\\left[\\frac{n(n+1)}2\\right]^2" },
+
+        // ================== 平面向量 ==================
+        { cat:"平面向量", name:"向量平行", latex: "\\vec{a}\\parallel\\vec{b} \\Leftrightarrow x_1y_2-x_2y_1=0" },
+        { cat:"平面向量", name:"向量垂直", latex: "\\vec{a}\\perp\\vec{b} \\Leftrightarrow x_1x_2+y_1y_2=0" },
+        { cat:"平面向量", name:"数量积", latex: "\\vec{a}\\cdot\\vec{b}=|\\vec{a}||\\vec{b}|\\cos\\theta=x_1x_2+y_1y_2" },
+        { cat:"平面向量", name:"模长公式", latex: "|\\vec{a}|=\\sqrt{x_1^2+y_1^2}" },
+        { cat:"平面向量", name:"夹角公式", latex: "\\cos\\theta=\\frac{\\vec{a}\\cdot\\vec{b}}{|\\vec{a}||\\vec{b}|}" },
+        { cat:"平面向量", name:"投影", latex: "\\vec{a}\\text{在}\\vec{b}\\text{方向投影}=\\frac{\\vec{a}\\cdot\\vec{b}}{|\\vec{b}|}" },
+        { cat:"平面向量", name:"三点共线", latex: "\\overrightarrow{AB}=\\lambda\\overrightarrow{AC}" },
+
+        // ================== 立体几何 ==================
+        { cat:"立体几何", name:"线面平行判定", latex: "\\text{线线平行}\\Rightarrow\\text{线面平行}" },
+        { cat:"立体几何", name:"面面平行判定", latex: "\\text{线面平行}\\Rightarrow\\text{面面平行}" },
+        { cat:"立体几何", name:"线面垂直判定", latex: "\\text{线线垂直}\\Rightarrow\\text{线面垂直}" },
+        { cat:"立体几何", name:"面面垂直判定", latex: "\\text{线面垂直}\\Rightarrow\\text{面面垂直}" },
+        { cat:"立体几何", name:"向量法线线角", latex: "\\cos\\theta=\\frac{|\\vec{a}\\cdot\\vec{b}|}{|\\vec{a}||\\vec{b}|}" },
+        { cat:"立体几何", name:"向量法线面角", latex: "\\sin\\theta=\\frac{|\\vec{a}\\cdot\\vec{n}|}{|\\vec{a}||\\vec{n}|}" },
+        { cat:"立体几何", name:"外接球半径(长方体)", latex: "2R=\\sqrt{a^2+b^2+c^2}" },
+        { cat:"立体几何", name:"内切球半径", latex: "r=\\frac{3V}{S_{\\text{表}}}" },
+        { cat:"立体几何", name:"正四面体高", latex: "h=\\frac{\\sqrt6}{3}a" },
+
+        // ================== 解析几何 ==================
+        { cat:"解析几何", name:"点到直线距离", latex: "d=\\frac{|Ax_0+By_0+C|}{\\sqrt{A^2+B^2}}" },
+        { cat:"解析几何", name:"两平行线距离", latex: "d=\\frac{|C_1-C_2|}{\\sqrt{A^2+B^2}}" },
+        { cat:"解析几何", name:"圆弦长公式", latex: "l=2\\sqrt{r^2-d^2}" },
+        { cat:"解析几何", name:"椭圆定义", latex: "|PF_1|+|PF_2|=2a\\;(2a>|F_1F_2|)" },
+        { cat:"解析几何", name:"椭圆离心率", latex: "e=\\frac{c}{a}=\\sqrt{1-\\frac{b^2}{a^2}}\\in(0,1)" },
+        { cat:"解析几何", name:"双曲线定义", latex: "||PF_1|-|PF_2||=2a\\;(2a<|F_1F_2|)" },
+        { cat:"解析几何", name:"双曲线离心率", latex: "e=\\frac{c}{a}=\\sqrt{1+\\frac{b^2}{a^2}}>1" },
+        { cat:"解析几何", name:"抛物线定义", latex: "|PF|=d\\text{到准线}" },
+        { cat:"解析几何", name:"抛物线焦点弦长", latex: "l=x_1+x_2+p=\\frac{2p}{\\sin^2\\alpha}" },
+        { cat:"解析几何", name:"点差法斜率(椭圆)", latex: "k=-\\frac{b^2x_0}{a^2y_0}" },
+        { cat:"解析几何", name:"切线方程(椭圆)", latex: "\\frac{x_0x}{a^2}+\\frac{y_0y}{b^2}=1" },
+        { cat:"解析几何", name:"抛物线切线", latex: "y_0y=p(x_0+x)" },
+        { cat:"解析几何", name:"焦半径公式(椭圆)", latex: "|MF|=a\\pm ex_0" },
+        { cat:"解析几何", name:"焦半径公式(抛物线)", latex: "|MF|=x_0+\\frac{p}{2}" },
+
+        // ================== 概率统计 ==================
+        { cat:"概率统计", name:"古典概型", latex: "P(A)=\\frac{n_A}{n_\\Omega}" },
+        { cat:"概率统计", name:"几何概型", latex: "P(A)=\\frac{\\text{度量}_A}{\\text{度量}_\\Omega}" },
+        { cat:"概率统计", name:"条件概率", latex: "P(B|A)=\\frac{P(AB)}{P(A)}" },
+        { cat:"概率统计", name:"超几何分布均值", latex: "E(X)=n\\cdot\\frac{M}{N}" },
+        { cat:"概率统计", name:"二项分布均值", latex: "E(X)=np" },
+        { cat:"概率统计", name:"二项分布方差", latex: "D(X)=np(1-p)" },
+        { cat:"概率统计", name:"正态分布对称性", latex: "\\text{图像关于}x=\\mu\\text{对称}" },
+        { cat:"概率统计", name:"3σ原则", latex: "P(\\mu-\\sigma<X<\\mu+\\sigma)\\approx0.6827" },
+        { cat:"概率统计", name:"线性回归系数", latex: "\\hat{b}=\\frac{\\sum(x_i-\\bar{x})(y_i-\\bar{y})}{\\sum(x_i-\\bar{x})^2}" },
+        { cat:"概率统计", name:"相关系数", latex: "r=\\frac{\\sum(x_i-\\bar{x})(y_i-\\bar{y})}{\\sqrt{\\sum(x_i-\\bar{x})^2\\sum(y_i-\\bar{y})^2}}" },
+        { cat:"概率统计", name:"独立性检验", latex: "K^2=\\frac{n(ad-bc)^2}{(a+b)(c+d)(a+c)(b+d)}" },
+
+        // ================== 复数 ==================
+        { cat:"复数", name:"复数模", latex: "|z|=\\sqrt{a^2+b^2}" },
+        { cat:"复数", name:"复数除法", latex: "\\frac{a+bi}{c+di}=\\frac{(a+bi)(c-di)}{c^2+d^2}" },
+        { cat:"复数", name:"共轭复数", latex: "\\overline{a+bi}=a-bi" },
+
+        // ================== 极坐标与参数方程 ==================
+        { cat:"极参方程", name:"极直互化", latex: "\\rho^2=x^2+y^2,\\ \\tan\\theta=\\frac{y}{x},\\ x=\\rho\\cos\\theta,\\ y=\\rho\\sin\\theta" },
+        { cat:"极参方程", name:"直线参数方程", latex: "\\begin{cases} x=x_0+t\\cos\\alpha \\\\ y=y_0+t\\sin\\alpha \\end{cases}\\ (t\\text{为参数})" },
+        { cat:"极参方程", name:"圆参数方程", latex: "\\begin{cases} x=a+r\\cos\\theta \\\\ y=b+r\\sin\\theta \\end{cases}" },
+        { cat:"极参方程", name:"椭圆参数方程", latex: "\\begin{cases} x=a\\cos\\theta \\\\ y=b\\sin\\theta \\end{cases}" },
+        { cat:"极参方程", name:"参数t几何意义", latex: "|PA|=|t_1|,\\ |AB|=|t_1-t_2|" },
+
+        // ================== 排列组合二项式 ==================
+        { cat:"排列组合", name:"排列数", latex: "A_n^m=n(n-1)\\cdots(n-m+1)" },
+        { cat:"排列组合", name:"组合数", latex: "C_n^m=\\frac{n!}{m!(n-m)!}" },
+        { cat:"排列组合", name:"二项式定理", latex: "(a+b)^n=\\sum_{k=0}^n C_n^k a^{n-k}b^k" },
+        { cat:"排列组合", name:"二项式系数和", latex: "\\sum_{k=0}^n C_n^k=2^n" }
+    ];
+
+    let currentFilter = "";
+    function render() {
+        const container = document.getElementById('formulaContainer');
+        let filtered = formulas;
+        if (currentFilter.trim()) {
+            const kw = currentFilter.trim().toLowerCase();
+            filtered = formulas.filter(f => f.name.toLowerCase().includes(kw) || f.latex.toLowerCase().includes(kw) || f.cat.toLowerCase().includes(kw));
+        }
+        // 按类别分组
+        const groups = {};
+        filtered.forEach(f => { if (!groups[f.cat]) groups[f.cat] = []; groups[f.cat].push(f); });
+        let html = '';
+        // 可以按自己喜欢的顺序展示
+        const order = ["集合与逻辑","不等式","函数与导数","三角函数","数列","平面向量","立体几何","解析几何","概率统计","复数","极参方程","排列组合"];
+        for (let cat of order) {
+            if (groups[cat]) {
+                html += `<div class="category-section"><div class="category-title">📌 ${cat}</div><div class="formula-grid">`;
+                groups[cat].forEach(f => {
+                    let rendered = '';
+                    try { const span = document.createElement('span'); katex.render(f.latex, span, { throwOnError: false }); rendered = span.innerHTML; } catch(e) { rendered = f.latex; }
+                    html += `<div class="card">
+                                <div class="formula-name">${f.name}</div>
+                                <div class="formula-content">${rendered}</div>
+                                <button class="copy-btn" data-latex="${f.latex.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;')}">📋 复制 LaTeX</button>
+                             </div>`;
+                });
+                html += `</div></div>`;
+            }
+        }
+        if (filtered.length === 0) html = '<div style="text-align:center; padding:2rem;">😢 没有找到相关公式，试试其他关键词</div>';
+        container.innerHTML = html;
+        document.querySelectorAll('.copy-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                navigator.clipboard.writeText(btn.getAttribute('data-latex'));
+                const toast = document.getElementById('toast');
+                toast.style.opacity = '1';
+                setTimeout(() => toast.style.opacity = '0', 1500);
+            });
+        });
+    }
+    document.getElementById('searchInput').addEventListener('input', e => { currentFilter = e.target.value; render(); });
+    render();
+</script>
+</body>
+</html>
